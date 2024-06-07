@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import '../assets/StarCoordinates.css';
+import image from  '../assets/illu-pegase-1.jpg'
 
 interface StarCoordinates {
     ra: string;
@@ -13,9 +15,6 @@ interface Position {
 
 const starData: { [key: string]: StarCoordinates } = {
     Markab: { ra: '23h 04m 45.65s', dec: '+15° 12′ 19.0″' },
-    Scheat: { ra: '23h 03m 46.45s', dec: '+28° 04′ 58.0″' },
-    Algenib: { ra: '00h 13m 14.16s', dec: '+15° 11′ 00.9″' },
-    Alpheratz: { ra: '00h 08m 23.26s', dec: '+29° 05′ 25.6″' },
     // Ajoutez plus d'étoiles ici si nécessaire
 };
 
@@ -24,14 +23,26 @@ const StarCoordinates: React.FC = () => {
     const [coordinates, setCoordinates] = useState<StarCoordinates | null>(null);
     const [position, setPosition] = useState<Position | null>(null);
     const [orientation, setOrientation] = useState<number | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition((pos) => {
-            setPosition({
-                latitude: pos.coords.latitude,
-                longitude: pos.coords.longitude,
-            });
-        });
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    setPosition({
+                        latitude: pos.coords.latitude,
+                        longitude: pos.coords.longitude,
+                    });
+                    setError(null);
+                },
+                (err) => {
+                    console.log(err);
+                    setError('Geolocation permission denied. Please allow location access.');
+                }
+            );
+        } else {
+            setError('Geolocation is not supported by this browser.');
+        }
     }, []);
 
     useEffect(() => {
@@ -46,8 +57,7 @@ const StarCoordinates: React.FC = () => {
     }, []);
 
     useEffect(() => {
-            setCoordinates( starData["Markab"]);
-
+        setCoordinates(starData['Markab']);
     }, [starName]);
 
     const calculateHorizontalCoordinates = () => {
@@ -135,38 +145,32 @@ const StarCoordinates: React.FC = () => {
     }
 
     return (
-        <div>
-            <h1>Coordinates of {starName}</h1>
-            <p>Right Ascension: {coordinates.ra}</p>
-            <p>Declination: {coordinates.dec}</p>
+        <div className="star-coordinates-container">
+            {error && <p style={{ color: 'red' }}>{error}</p>}
             {position && horizontalCoordinates && (
                 <>
-                    <h2>Observer's Location</h2>
-                    <p>Latitude: {position.latitude}</p>
-                    <p>Longitude: {position.longitude}</p>
-                    <h2>Horizontal Coordinates</h2>
-                    <p>Azimuth: {horizontalCoordinates.azimuth.toFixed(2)}°</p>
-                    <p>Altitude: {horizontalCoordinates.altitude.toFixed(2)}°</p>
-                    {orientation !== null && (
-                        <h2>Device Orientation</h2>
-                    )}
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-                        <div style={{ transform: `rotate(${orientation}deg)` }}>
-                            <svg
-                                width="100"
-                                height="100"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    d="M12 2L14.09 8.26H20.62L15.27 12.26L17.36 18.52L12 14.52L6.64 18.52L8.73 12.26L3.38 8.26H9.91L12 2Z"
-                                    fill="currentColor"
-                                />
-                            </svg>
-                        </div>
-                        <p>Alignez la flèche avec la direction de l'étoile.</p>
+                    <div className={"pegase"}>
+                        <img src={image} alt={'pegase'}></img>
                     </div>
+                    {orientation !== null && (
+                        <>
+                            <div className="arrow-container">
+                                <div
+                                    className="arrow"
+                                    style={{
+                                        transform: `rotate(${orientation - horizontalCoordinates.azimuth}deg)`,
+                                    }}
+                                >
+                                    <svg fill="#000000" width="800px" height="800px" viewBox="0 0 36 36" version="1.1"  preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink">
+                                        <title>arrow-line</title>
+                                        <path d="M27.66,15.61,18,6,8.34,15.61A1,1,0,1,0,9.75,17L17,9.81V28.94a1,1,0,1,0,2,0V9.81L26.25,17a1,1,0,0,0,1.41-1.42Z"></path>
+                                        <rect x="0" y="0" width="36" height="36" fillOpacity="0"/>
+                                    </svg>
+                                </div>
+                                <p>Alignez la flèche avec la direction de la constallation.</p>
+                            </div>
+                        </>
+                    )}
                 </>
             )}
         </div>

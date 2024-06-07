@@ -1,0 +1,27 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+h1, h2, p {
+    text-align: center;
+}
+
+ul {
+    padding: 0;
+    list-style: none;
+    text-align: center;
+}
+
+li {
+    margin: 10px 0;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
